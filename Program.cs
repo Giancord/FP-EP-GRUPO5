@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -43,6 +44,9 @@ namespace FP_EP
         static string usuario = "admin";
         static string contra = "1234";
 
+        //Archivo de guardado
+        static string rutaArchivo = "Minimarket_datos.txt";
+
         //Método Login
         public static bool Login()
         {
@@ -72,14 +76,16 @@ namespace FP_EP
         public static void MenuPrincipal() 
         {
             int op = 0;
-            while (op != 4)
+            while (op != 6)
             {
                 Console.Clear();
                 Console.WriteLine("SISTEMA DE VENTAS");
                 Console.WriteLine("[1] Productos");
                 Console.WriteLine("[2] Clientes");
                 Console.WriteLine("[3] Comprobantes de pago");
-                Console.WriteLine("[4] Salir");
+                Console.WriteLine("[4] Guardar datos");
+                Console.WriteLine("[5] Cargar datos");
+                Console.WriteLine("[6] Salir");
                 op = int.Parse(Console.ReadLine());
 
                 switch (op)
@@ -94,6 +100,12 @@ namespace FP_EP
                         MenuComprobante();
                         break;
                     case 4:
+                        Guardar_datos();
+                        break;
+                    case 5:
+                        Cargar_datos();
+                        break;
+                    case 6:
                         break;
                     default:
                         Console.WriteLine("Opcion incorrecta.");
@@ -814,6 +826,105 @@ namespace FP_EP
 
             return valor;
         }
+
+        //MÉTODOS PARA GUARDAR Y CARGAR DATOS REGISTRADOS EN NOTEPAD
+        static public void Guardar_datos()
+        {
+            Console.WriteLine("*****GUARDAR DATOS EN ARCHIVO*****");
+            if (nprod == 0)
+            {
+                Console.WriteLine("No hay registros de productos para guardar.");
+                return;
+            }
+            using (StreamWriter escribir = new StreamWriter(rutaArchivo))
+            {
+                escribir.WriteLine("CONTADORES");
+                escribir.WriteLine(nprod);
+                escribir.WriteLine(ncli);
+                escribir.WriteLine(ncom);
+
+                escribir.WriteLine("PRODUCTOS");
+
+                for (int i = 0; i < nprod; i++)
+                {
+                    escribir.WriteLine($"{codigos[i]}|{nombres[i]}|" +$"{precios[i].ToString(CultureInfo.InvariantCulture)}|" +
+                    $"{stock[i]}|{stock_inicial[i]}");
+                }
+
+                escribir.WriteLine("CLIENTES");
+                for (int i = 0; i < ncli; i++)
+                {
+                    escribir.WriteLine($"{dnis[i]}|{clientes[i]}|{telefonos[i]}");
+                }
+
+                escribir.WriteLine("COMPROBANTES");
+                for (int i = 0; i < ncom; i++) 
+                {
+                    escribir.WriteLine($"{ComprobanteCodigos[i]}|" + $"{indiceProd[i]}|" + $"{indiceCli[i]}|" +
+                    $"{totalVenta[i].ToString(CultureInfo.InvariantCulture)}|" + $"{cantidadVendida[i]}");
+                }
+            }
+            Console.WriteLine($"Datos guardados correctamente.");
+        }
+        static public void Cargar_datos() 
+        {
+            Console.WriteLine("*****CARGAR DATOS DE ARCHIVO*****");
+            if (!File.Exists(rutaArchivo))
+            {
+                Console.WriteLine("No existe el archivo.");
+                return;
+            }
+            using (StreamReader archivo = new StreamReader(rutaArchivo)) 
+            {
+                archivo.ReadLine();
+
+                nprod = int.Parse(archivo.ReadLine() ?? "0");
+                ncli = int.Parse(archivo.ReadLine() ?? "0");
+                ncom = int.Parse(archivo.ReadLine() ?? "0");
+
+                archivo.ReadLine();
+
+                for (int i = 0; i < nprod; i++)
+                {
+                    string linea = archivo.ReadLine() ?? "";
+                    string[] datos = linea.Split('|');
+
+                    codigos[i] = datos[0];
+                    nombres[i] = datos[1];
+                    precios[i] = double.Parse(
+                        datos[2], CultureInfo.InvariantCulture);
+                    stock[i] = int.Parse(datos[3]);
+                    stock_inicial[i] = int.Parse(datos[4]);
+                }
+                archivo.ReadLine();
+
+                for (int i = 0; i < ncli; i++)
+                {
+                    string linea = archivo.ReadLine() ?? "";
+                    string[] datos = linea.Split('|');
+
+                    dnis[i] = datos[0];
+                    clientes[i] = datos[1];
+                    telefonos[i] = datos[2];
+                }
+                archivo.ReadLine();
+
+                for (int i = 0; i < ncom; i++)
+                {
+                    string linea = archivo.ReadLine() ?? "";
+                    string[] datos = linea.Split('|');
+
+                    ComprobanteCodigos[i] = datos[0];
+                    indiceProd[i] = int.Parse(datos[1]);
+                    indiceCli[i] = int.Parse(datos[2]);
+                    totalVenta[i] = double.Parse(
+                        datos[3], CultureInfo.InvariantCulture);
+                    cantidadVendida[i] = int.Parse(datos[4]);
+                }
+                Console.WriteLine("Datos cargados correctamente.");
+            }
+        }
+
 
         //Método Principal Main:
         static void Main(string[] args)
