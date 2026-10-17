@@ -9,11 +9,22 @@ namespace FP_EP
 {
     internal class Program
     {
-        static int max = 100, nprod = 0, ncli = 0;
+        //Limite máximo
+        static int max = 100;
+        
+        //Contadores
+        static int nprod = 0, ncli = 0;
+
+        //Arreglos
         static string[] codigos = new string[max];
         static string[] nombres = new string[max];
         static double[] precios = new double[max];
         static int[] stock = new int[max];
+
+        static string[] dnis = new string[max];
+        static string[] clientes = new string[max];
+        static string[] telefonos = new string[max];
+        static string telefono_inicio = "9";
         public static bool Login()
         {
             for (int i = 1; i <= 3; i++)
@@ -259,10 +270,13 @@ namespace FP_EP
             }
             Console.ReadKey();
         }
+
+        //PARTE CLIENTES
+
         public static void MenuClientes() 
         {
             int op = 0;
-            while (op != 6)
+            while (op != 7)
             {
                 Console.Clear();
                 Console.WriteLine("CLIENTES");
@@ -271,7 +285,8 @@ namespace FP_EP
                 Console.WriteLine("[3] Buscar");
                 Console.WriteLine("[4] Modificar");
                 Console.WriteLine("[5] Eliminar");
-                Console.WriteLine("[6] Regresar");
+                Console.WriteLine("[6] Ordenar alfabeticamente");
+                Console.WriteLine("[7] Regresar");
                 op = int.Parse(Console.ReadLine());
 
                 switch (op)
@@ -291,7 +306,10 @@ namespace FP_EP
                     case 5: 
                         EliminarCliente(); 
                         break;
-                    case 6: 
+                    case 6:
+                        OrdenarClientes();
+                        break;
+                    case 7:
                         break;
                     default:
                         Console.WriteLine("Opcion incorrecta.");
@@ -300,14 +318,242 @@ namespace FP_EP
                 }
             }
         }
-        public static void RegistrarCliente() { }
-        public static void ListarClientes() { }
-        public static void BuscarCliente() { }
-        //public static int BuscarClientePorDni(string dni) { }
-        public static void MostrarCliente(int i) { }
-        public static void ModificarCliente() { }
-        public static void EliminarCliente() { }
-        public static void EmitirComprobante() { }
+        static void RegistrarCliente()
+        {
+            Console.Clear();
+            Console.WriteLine("REGISTRAR CLIENTE");
+
+            if (ncli >= max)
+            {
+                Console.WriteLine("Limite de clientes alcanzado.");
+                Console.ReadKey();
+                return;
+            }
+
+            Console.Write("DNI: ");
+            string dni = Console.ReadLine() ?? "";
+
+            if (dni.Trim() == "" || BuscarClientePorDni(dni) != -1 || dni.Length != 8)
+            {
+                Console.WriteLine("DNI vacio, ya registrado o ingresó una longitud diferente a 8 caracteres numericos.");
+                Console.ReadKey();
+                return;
+            }
+
+            Console.Write("Nombre: ");
+            string nombre = Console.ReadLine() ?? "";
+            Console.Write("Telefono (Ingrese los 8 digitos posteriores al 9): ");
+            string telefono1 = Console.ReadLine() ?? "";
+            string telefono = telefono_inicio + telefono1;
+
+            if (nombre.Trim() == "")
+            {
+                Console.WriteLine("Nombre invalido.");
+            }
+            if (telefono.Length != 9) 
+            {
+                Console.WriteLine("Ingrese un número telefónico de 9 digitos [no incluya el 9 inicial].");
+            }
+            else
+            {
+                dnis[ncli] = dni;
+                clientes[ncli] = nombre;
+                telefonos[ncli] = telefono;
+                ncli++;
+                Console.WriteLine("Cliente registrado.");
+            }
+            Console.ReadKey();
+        }
+
+        static void ListarClientes()
+        {
+            Console.Clear();
+            Console.WriteLine("LISTA DE CLIENTES");
+
+            if (ncli == 0)
+                Console.WriteLine("No hay clientes registrados.");
+
+            for (int i = 0; i < ncli; i++)
+                MostrarCliente(i);
+
+            Console.ReadKey();
+        }
+
+        static void BuscarCliente()
+        {
+            Console.Clear();
+            Console.WriteLine("BUSCAR CLIENTE");
+            Console.Write("DNI: ");
+            string dni = Console.ReadLine() ?? "";
+            int pos = BuscarClientePorDni(dni);
+
+            if (pos == -1)
+                Console.WriteLine("Cliente no encontrado.");
+            else
+                MostrarCliente(pos);
+
+            Console.ReadKey();
+        }
+
+        static int BuscarClientePorDni(string dni)
+        {
+            for (int i = 0; i < ncli; i++)
+                if (dnis[i] == dni)
+                    return i;
+            return -1;
+        }
+
+        static void MostrarCliente(int i)
+        {
+            Console.WriteLine("DNI: " + dnis[i]);
+            Console.WriteLine("Nombre: " + clientes[i]);
+            Console.WriteLine("Telefono: " + telefonos[i]);
+            Console.WriteLine("----------------------");
+        }
+
+        static void ModificarCliente()
+        {
+            Console.Clear();
+            Console.WriteLine("MODIFICAR CLIENTE");
+            Console.Write("DNI: ");
+            string dni = Console.ReadLine() ?? "";
+            int pos = BuscarClientePorDni(dni);
+
+            if (pos == -1)
+            {
+                Console.WriteLine("Cliente no encontrado.");
+            }
+            else
+            {
+                MostrarCliente(pos);
+                Console.Write("Nuevo nombre: ");
+                string nombre = Console.ReadLine() ?? "";
+                Console.Write("Nuevo telefono: ");
+                string telefono1 = Console.ReadLine() ?? "";
+                string telefono = telefono_inicio + telefono1;
+
+                if (nombre.Trim() == "")
+                {
+                    Console.WriteLine("Nombre invalido.");
+                }
+                if (telefono.Length != 9) 
+                {
+                    Console.WriteLine("Ingrese un número de 9 dígitos, omita el 9 inicial.");
+                }
+                else
+                {
+                    clientes[pos] = nombre;
+                    telefonos[pos] = telefono;
+                    Console.WriteLine("Cliente modificado.");
+                }
+            }
+            Console.ReadKey();
+        }
+
+        static void EliminarCliente()
+        {
+            Console.Clear();
+            Console.WriteLine("ELIMINAR CLIENTE");
+            Console.Write("DNI: ");
+            string dni = Console.ReadLine() ?? "";
+            int pos = BuscarClientePorDni(dni);
+
+            if (pos == -1)
+            {
+                Console.WriteLine("Cliente no encontrado.");
+            }
+            else
+            {
+                for (int i = pos; i < ncli - 1; i++)
+                {
+                    dnis[i] = dnis[i + 1];
+                    clientes[i] = clientes[i + 1];
+                    telefonos[i] = telefonos[i + 1];
+                }
+
+                ncli--;
+                Console.WriteLine("Cliente eliminado.");
+            }
+            Console.ReadKey();
+        }
+
+        static void OrdenarClientes() 
+        {
+            if (ncli <= 1)
+            {
+                Console.WriteLine("No hay suficientes registros para ordenar.");
+                return;
+            }
+            for (int i = 0; i < ncli - 1; i++)
+            {
+                for (int j = 0; j < ncli - 1 - i; j++)
+                {
+                    if (string.Compare(clientes[j], clientes[j + 1]) > 0)
+                    {
+                        string temp = clientes[j];
+                        clientes[j] = clientes[j + 1];
+                        clientes[j + 1] = temp;
+
+                        string temp_telefono = telefonos[j];
+                        telefonos[j] = telefonos[j + 1];
+                        telefonos[j + 1] = temp_telefono;
+
+                        string temp_dni = dnis[j];
+                        dnis[j] = dnis[j + 1];
+                        dnis[j + 1] = temp_dni;
+                    }
+                }
+            }
+        }
+
+        //EMISIÓN DE COMPROBANTES
+
+        public static void EmitirComprobante() 
+        {
+
+            Console.Clear();
+            Console.WriteLine("EMITIR COMPROBANTE");
+
+            if (nprod == 0)
+            {
+                Console.WriteLine("No hay productos registrados.");
+                Console.ReadKey();
+                return;
+            }
+
+            Console.Write("Codigo del producto: ");
+            string codigo = Console.ReadLine() ?? "";
+            int pos = BuscarProductoPorCodigo(codigo);
+
+            if (pos == -1)
+            {
+                Console.WriteLine("Producto no encontrado.");
+            }
+            else
+            {
+                MostrarProducto(pos);
+                int cantidad = LeerEntero("Cantidad a vender: ");
+
+                if (cantidad <= 0 || cantidad > stock[pos])
+                {
+                    Console.WriteLine("Cantidad invalida o stock insuficiente.");
+                }
+                else
+                {
+                    double total = precios[pos] * cantidad;
+                    stock[pos] -= cantidad;
+
+                    Console.WriteLine("BOLETA DE VENTA");
+                    Console.WriteLine("Producto: " + nombres[pos]);
+                    Console.WriteLine("Codigo: " + codigos[pos]);
+                    Console.WriteLine("Precio unitario: S/ " + precios[pos]);
+                    Console.WriteLine("Cantidad: " + cantidad);
+                    Console.WriteLine("TOTAL: S/ " + total);
+                    Console.WriteLine("Stock restante: " + stock[pos]);
+                }
+            }
+            Console.ReadKey();
+        }
         static int LeerEntero(string mensaje)
         {
             int valor;
