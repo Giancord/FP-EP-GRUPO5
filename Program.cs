@@ -659,9 +659,10 @@ namespace FP_EP
                     cantidadVendida[ncom] = cantidad;
                     totalVenta[ncom] = total;
                     ncom++;
-                    if ((stock_inicial[pos] - cantidad) <= (stock_inicial[pos] / 2))
+                    if ((stock[pos]) <= (stock_inicial[pos] / 2))
                     {
-                        Console.WriteLine($"Alerta!!! El stock restante {stock[pos]}es inferior o igual a la mitad del stock inicial [{stock_inicial[pos]}], se recomienda reabastecer.");
+                        Console.WriteLine($"Alerta!!! El stock restante [{stock[pos]}] es inferior o igual a la mitad del stock inicial [{stock_inicial[pos]}]," +
+                            $" se recomienda reabastecer.");
                     }
                 }
             }
@@ -729,9 +730,10 @@ namespace FP_EP
                     cantidadVendida[ncom] = cantidad;
                     totalVenta[ncom] = total;
                     ncom++;
-                    if ((stock_inicial[pos] - cantidad) <= (stock_inicial[pos] / 2)) 
+                    if ((stock[pos]) <= (stock_inicial[pos] / 2)) 
                     {
-                        Console.WriteLine($"Alerta!!! El stock restante {stock[pos]} es inferior o igual a la mitad del stock inicial [{stock_inicial[pos]}], se recomienda reabastecer.");
+                        Console.WriteLine($"Alerta!!! El stock restante [{stock[pos]}] es inferior o igual a la mitad del stock inicial [{stock_inicial[pos]}]," +
+                            $" se recomienda reabastecer.");
                     }
                 }
             }
