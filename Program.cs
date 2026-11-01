@@ -86,7 +86,7 @@ namespace FP_EP
                 Console.WriteLine("[4] Guardar datos");
                 Console.WriteLine("[5] Cargar datos");
                 Console.WriteLine("[6] Salir");
-                op = int.Parse(Console.ReadLine());
+                op = Validadores.LeerMenu("Ingrese una opción: ");
 
                 switch (op)
                 {
@@ -129,7 +129,7 @@ namespace FP_EP
                 Console.WriteLine("[4] Modificar");
                 Console.WriteLine("[5] Eliminar");
                 Console.WriteLine("[6] Regresar");
-                op = int.Parse(Console.ReadLine());
+                op = Validadores.LeerMenu("Ingrese una opción: "); ;
 
                 switch (op)
                 {
@@ -171,20 +171,18 @@ namespace FP_EP
                 return;
             }
 
-            Console.Write("Codigo: ");
-            string codigo = Console.ReadLine() ?? "";
+            string codigo = Validadores.LeerTexto("Código: ");
 
-            if (codigo.Trim() == "" || BuscarProductoPorCodigo(codigo) != -1)
+            if (BuscarProductoPorCodigo(codigo) != -1)
             {
-                Console.WriteLine("Codigo vacio o ya existente.");
+                Console.WriteLine("Codigo ya existente.");
                 Console.ReadKey();
                 return;
             }
 
-            Console.Write("Nombre: ");
-            string nombre = Console.ReadLine() ?? "";
-            double precio = LeerDouble("Precio: ");
-            int cantidad = LeerEntero("Stock: ");
+            string nombre = Validadores.LeerTexto("Nombre: ");
+            double precio = Validadores.LeerDouble("Precio: ");
+            int cantidad = Validadores.LeerEntero("Stock: ");
 
             if (nombre.Trim() == "" || precio <= 0 || cantidad < 0)
             {
@@ -278,8 +276,8 @@ namespace FP_EP
                 MostrarProducto(pos);
                 Console.Write("Nuevo nombre: ");
                 string nombre = Console.ReadLine() ?? "";
-                double precio = LeerDouble("Nuevo precio: ");
-                int cantidad = LeerEntero("Nuevo stock: ");
+                double precio = Validadores.LeerDouble("Nuevo precio: ");
+                int cantidad = Validadores.LeerEntero("Nuevo stock: ");
 
                 if (nombre.Trim() == "" || precio <= 0 || cantidad < 0)
                     Console.WriteLine("Datos invalidos.");
@@ -340,7 +338,7 @@ namespace FP_EP
                 Console.WriteLine("[5] Eliminar");
                 Console.WriteLine("[6] Ordenar alfabeticamente");
                 Console.WriteLine("[7] Regresar");
-                op = int.Parse(Console.ReadLine());
+                op = Validadores.LeerMenu("Ingrese una opción: ");
 
                 switch (op)
                 {
@@ -375,6 +373,8 @@ namespace FP_EP
         //Registro de clientes
         static void RegistrarCliente()
         {
+            string valpermitidos = "1234567890";
+            string dni;
             Console.Clear();
             Console.WriteLine("REGISTRAR CLIENTE");
 
@@ -385,39 +385,58 @@ namespace FP_EP
                 return;
             }
 
-            Console.Write("DNI: ");
-            string dni = Console.ReadLine() ?? "";
+            while (true)
+            {
+                bool valido = true;
+                Console.Write("DNI: ");
+                dni = Console.ReadLine()?.Trim() ?? "";
+                
 
-            if (dni.Trim() == "" || BuscarClientePorDni(dni) != -1 || dni.Length != 8)
-            {
-                Console.WriteLine("DNI vacio, ya registrado o ingresó una longitud diferente a 8 caracteres numericos.");
-                Console.ReadKey();
-                return;
+                foreach (char c in dni)
+                {
+                    if (!valpermitidos.Contains(c))
+                    {
+                        valido = false;
+                        break;
+                    }
+                }
+                if (dni.Trim() == "" || BuscarClientePorDni(dni) != -1 || dni.Length != 8 || !valido)
+                {
+                    Console.WriteLine("DNI vacio, ya registrado o ingresó una longitud incorrecta (8 caracteres numéricos).");
+                    Console.ReadKey();
+                    continue;
+                }
+                break;
             }
 
-            Console.Write("Nombre: ");
-            string nombre = Console.ReadLine() ?? "";
-            Console.Write("Telefono (Ingrese los 8 digitos posteriores al 9): ");
-            string telefono1 = Console.ReadLine() ?? "";
-            string telefono = telefono_inicio + telefono1;
+            string nombre = Validadores.LeerTexto("Nombre: ");
 
-            if (nombre.Trim() == "")
+            while (true)
             {
-                Console.WriteLine("Nombre invalido.");
+                bool valido = true;
+                string telefono1 = Validadores.LeerTexto("Telefono (Omita el 9 inicial [solo ingrese los siguientes 8 dígitos]): ");
+                string telefono = telefono_inicio + telefono1;
+
+                foreach (char c in telefono)
+                {
+                    if (!valpermitidos.Contains(c))
+                    {
+                        valido = false;
+                        break;
+                    }
+                }
+                if (telefono.Length == 9 && valido)
+                {
+                    dnis[ncli] = dni;
+                    clientes[ncli] = nombre;
+                    telefonos[ncli] = telefono;
+                    ncli++;
+                    Console.WriteLine("Cliente registrado.");
+                    break;
+                }
+                Console.WriteLine("Ingrese un número telefónico de 9 digitos numéricos [no incluya el 9 inicial].");
             }
-            if (telefono.Length != 9) 
-            {
-                Console.WriteLine("Ingrese un número telefónico de 9 digitos [no incluya el 9 inicial].");
-            }
-            else
-            {
-                dnis[ncli] = dni;
-                clientes[ncli] = nombre;
-                telefonos[ncli] = telefono;
-                ncli++;
-                Console.WriteLine("Cliente registrado.");
-            }
-            Console.ReadKey();
+
         }
 
         //Mostrar todos los clientes
@@ -583,7 +602,7 @@ namespace FP_EP
                 Console.WriteLine("[3] Mostrar comprobantes emitidos");
                 Console.WriteLine("[4] Buscar comprobante por código");
                 Console.WriteLine("[5] Salir");
-                op = int.Parse(Console.ReadLine());
+                op = Validadores.LeerMenu("Ingrese una opción: ");
 
                 switch (op)
                 {
@@ -634,7 +653,7 @@ namespace FP_EP
             else
             {
                 MostrarProducto(pos);
-                int cantidad = LeerEntero("Cantidad a vender: ");
+                int cantidad = Validadores.LeerEntero("Cantidad a vender: ");
 
                 if (cantidad <= 0 || cantidad > stock[pos])
                 {
@@ -703,7 +722,7 @@ namespace FP_EP
             else
             {
                 MostrarProducto(pos);
-                int cantidad = LeerEntero("Cantidad a vender: ");
+                int cantidad = Validadores.LeerEntero("Cantidad a vender: ");
 
                 if (cantidad <= 0 || cantidad > stock[pos])
                 {
@@ -797,36 +816,6 @@ namespace FP_EP
                 if (ComprobanteCodigos[i] == codigo)
                     return i;
             return -1;
-        }
-
-        //
-        //MÉTODOS AUXILIARES GENERALES
-        //
-
-        //Validar que lo ingresado sea entero int
-        static int LeerEntero(string mensaje)
-        {
-            int valor;
-            Console.Write(mensaje);
-
-            while (!int.TryParse(Console.ReadLine(), out valor))
-                Console.Write("Ingrese un numero entero valido: ");
-
-            return valor;
-        }
-
-        //Validar que el valor ingresado sea double
-        static double LeerDouble(string mensaje)
-        {
-            double valor;
-            Console.Write(mensaje);
-
-            while (!double.TryParse(Console.ReadLine(), out valor) || double.IsNaN(valor) || double.IsInfinity(valor))
-            {
-                Console.Write("Ingrese un numero valido: ");
-            }
-
-            return valor;
         }
 
         //MÉTODOS PARA GUARDAR Y CARGAR DATOS REGISTRADOS EN NOTEPAD
