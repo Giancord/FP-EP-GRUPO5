@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FP_EP
+namespace EFV1_PorCorregir
 {
     internal class Program
     {
         //Limite máximo
         static int max = 100;
-        
+
         //Contadores
-        static int nprod = 0, ncli = 0, ncom=0;
+        static int nprod = 0, ncli = 0, ncom = 0;
+        static int nbol = 1; //sirve para dar el ultimo número al Código de comprobante (empezando en 1, ej: N0001-2-3...)
 
         //Arreglos:
         //Productos
@@ -31,10 +31,19 @@ namespace FP_EP
         static string[] telefonos = new string[max];
         static string telefono_inicio = "9";
 
+        //Respaldo de Clientes
+        static string[] dnisRespaldo = new string[max];
+        static string[] clientesRespaldo = new string[max];
+        static string[] telefonosRespaldo = new string[max]; //Sirven para guardar los datos originales
+                                                             //de un cliente asociados a un comprobante en caso se
+                                                             //ordenen los datos de los clientes alfabeticamente y luego se muestren los
+                                                             //comprobantes por DNI.
+
         //Comprobantes
         static string[] ComprobanteCodigos = new string[max];
         static int[] indiceProd = new int[max];
         static int[] indiceCli = new int[max];
+
         static double[] totalVenta = new double[max];
         static int[] cantidadVendida = new int[max];
 
@@ -72,8 +81,7 @@ namespace FP_EP
         }
 
         //Método menú principal
-
-        public static void MenuPrincipal() 
+        public static void MenuPrincipal()
         {
             int op = 0;
             while (op != 6)
@@ -87,7 +95,6 @@ namespace FP_EP
                 Console.WriteLine("[5] Cargar datos");
                 Console.WriteLine("[6] Salir");
                 op = Validadores.LeerMenu("Ingrese una opción: ");
-
                 switch (op)
                 {
                     case 1:
@@ -116,7 +123,7 @@ namespace FP_EP
         }
 
         //Método Menu productos
-        public static void MenuProductos() 
+        public static void MenuProductos()
         {
             int op = 0;
             while (op != 6)
@@ -133,20 +140,20 @@ namespace FP_EP
 
                 switch (op)
                 {
-                    case 1: 
+                    case 1:
                         RegistrarProducto();
                         break;
-                    case 2: 
-                        ListarProductos(); 
+                    case 2:
+                        ListarProductos();
                         break;
-                    case 3: 
-                        BuscarProducto(); 
+                    case 3:
+                        BuscarProducto();
                         break;
-                    case 4: 
-                        ModificarProducto(); 
+                    case 4:
+                        ModificarProducto();
                         break;
-                    case 5: 
-                        EliminarProducto(); 
+                    case 5:
+                        EliminarProducto();
                         break;
                     case 6: break;
                     default:
@@ -156,9 +163,9 @@ namespace FP_EP
                 }
             }
         }
-        
+
         //Método Registro de productos
-        public static void RegistrarProducto() 
+        public static void RegistrarProducto()
         {
 
             Console.Clear();
@@ -202,7 +209,7 @@ namespace FP_EP
         }
 
         //Método mostrar todos los productos
-        public static void ListarProductos() 
+        public static void ListarProductos()
         {
             Console.Clear();
             Console.WriteLine("LISTA DE PRODUCTOS");
@@ -217,7 +224,7 @@ namespace FP_EP
         }
 
         //Buscar y mostrar información de 1 producto
-        public static void BuscarProducto() 
+        public static void BuscarProducto()
         {
             Console.Clear();
             Console.WriteLine("BUSCAR PRODUCTO");
@@ -234,7 +241,7 @@ namespace FP_EP
         }
 
         //Buscar índice de producto por código (auxiliar para otros métodos)
-        public static int BuscarProductoPorCodigo(string codigo) 
+        public static int BuscarProductoPorCodigo(string codigo)
         {
             for (int i = 0; i < nprod; i++)
             {
@@ -248,7 +255,7 @@ namespace FP_EP
 
         //Mostrar información de un producto (auxiliar a otros métodos)
 
-        public static void MostrarProducto(int i) 
+        public static void MostrarProducto(int i)
         {
             Console.WriteLine("Codigo: " + codigos[i]);
             Console.WriteLine("Nombre: " + nombres[i]);
@@ -258,8 +265,7 @@ namespace FP_EP
         }
 
         //Modificar datos de un producto (menos código)
-
-        public static void ModificarProducto() 
+        public static void ModificarProducto()
         {
             Console.Clear();
             Console.WriteLine("MODIFICAR PRODUCTO");
@@ -294,7 +300,7 @@ namespace FP_EP
 
         //Eliminar datos de un producto y su código + reordenamiento de arreglos
 
-        public static void EliminarProducto() 
+        public static void EliminarProducto()
         {
             Console.Clear();
             Console.WriteLine("ELIMINAR PRODUCTO");
@@ -324,7 +330,7 @@ namespace FP_EP
 
         //PARTE CLIENTES
 
-        public static void MenuClientes() 
+        public static void MenuClientes()
         {
             int op = 0;
             while (op != 7)
@@ -342,20 +348,20 @@ namespace FP_EP
 
                 switch (op)
                 {
-                    case 1: 
-                        RegistrarCliente(); 
+                    case 1:
+                        RegistrarCliente();
                         break;
-                    case 2: 
-                        ListarClientes(); 
+                    case 2:
+                        ListarClientes();
                         break;
-                    case 3: 
-                        BuscarCliente(); 
+                    case 3:
+                        BuscarCliente();
                         break;
                     case 4:
-                        ModificarCliente(); 
+                        ModificarCliente();
                         break;
-                    case 5: 
-                        EliminarCliente(); 
+                    case 5:
+                        EliminarCliente();
                         break;
                     case 6:
                         OrdenarClientes();
@@ -390,7 +396,7 @@ namespace FP_EP
                 bool valido = true;
                 Console.Write("DNI: ");
                 dni = Console.ReadLine()?.Trim() ?? "";
-                
+
 
                 foreach (char c in dni)
                 {
@@ -430,6 +436,9 @@ namespace FP_EP
                     dnis[ncli] = dni;
                     clientes[ncli] = nombre;
                     telefonos[ncli] = telefono;
+                    dnisRespaldo[ncli] = dni;
+                    clientesRespaldo[ncli] = nombre;
+                    telefonosRespaldo[ncli] = telefono;
                     ncli++;
                     Console.WriteLine("Cliente registrado.");
                     break;
@@ -472,7 +481,7 @@ namespace FP_EP
         }
 
         //Obtener índice de cliente por dni (auxiliar a otros métodos)
-        
+
         static int BuscarClientePorDni(string dni)
         {
             for (int i = 0; i < ncli; i++)
@@ -516,7 +525,7 @@ namespace FP_EP
                 {
                     Console.WriteLine("Nombre invalido.");
                 }
-                if (telefono.Length != 9) 
+                if (telefono.Length != 9)
                 {
                     Console.WriteLine("Ingrese un número de 9 dígitos, omita el 9 inicial.");
                 }
@@ -559,7 +568,7 @@ namespace FP_EP
         }
 
         //Ordenar clientes por nombre alfabeticamente
-        static void OrdenarClientes() 
+        static void OrdenarClientes()
         {
             if (ncli <= 1)
             {
@@ -590,7 +599,7 @@ namespace FP_EP
 
         //COMPROBANTES
 
-        public static void MenuComprobante() 
+        public static void MenuComprobante()
         {
             int op = 0;
             while (op != 5)
@@ -641,55 +650,103 @@ namespace FP_EP
                 Console.ReadKey();
                 return;
             }
+            string codigoComprobante = CodigoComprobInicio + nbol;
+            double totalComprobante = 0;
+            bool seRegistroProducto = false;
 
-            Console.Write("Codigo del producto: ");
-            string codigo = Console.ReadLine() ?? "";
-            int pos = BuscarProductoPorCodigo(codigo);
-
-            if (pos == -1)
+            while (true)
             {
-                Console.WriteLine("Producto no encontrado.");
-            }
-            else
-            {
-                MostrarProducto(pos);
-                int cantidad = Validadores.LeerEntero("Cantidad a vender: ");
+                Console.Write("Codigo del producto: ");
+                string codigo = Console.ReadLine() ?? "";
+                int pos = BuscarProductoPorCodigo(codigo);
 
-                if (cantidad <= 0 || cantidad > stock[pos])
+                if (pos == -1)
                 {
-                    Console.WriteLine("Cantidad invalida o stock insuficiente.");
+                    Console.WriteLine("Producto no encontrado.");
+                }
+                else if (ncom >= max)
+                {
+                    Console.WriteLine("Se alcanzó el límite permitido de registros.");
+                    break;
                 }
                 else
                 {
-                    double total = precios[pos] * cantidad;
-                    stock[pos] -= cantidad;
+                    MostrarProducto(pos);
+                    int cantidad = Validadores.LeerEntero("Cantidad a vender: ");
 
-                    Console.WriteLine("BOLETA DE VENTA");
-                    Console.WriteLine("Producto: " + nombres[pos]);
-                    Console.WriteLine("Codigo: " + codigos[pos]);
-                    Console.WriteLine("Precio unitario: S/ " + precios[pos]);
-                    Console.WriteLine("Cantidad: " + cantidad);
-                    Console.WriteLine("TOTAL: S/ " + total);
-                    Console.WriteLine("Stock restante: " + stock[pos]);
-
-                    ComprobanteCodigos[ncom] = CodigoComprobInicio + ncom;
-                    indiceProd[ncom] = pos;
-                    indiceCli[ncom] = -1;
-                    cantidadVendida[ncom] = cantidad;
-                    totalVenta[ncom] = total;
-                    ncom++;
-                    if ((stock[pos]) <= (stock_inicial[pos] / 2))
+                    if (cantidad <= 0 || cantidad > stock[pos])
                     {
-                        Console.WriteLine($"Alerta!!! El stock restante [{stock[pos]}] es inferior o igual a la mitad del stock inicial [{stock_inicial[pos]}]," +
-                            $" se recomienda reabastecer.");
+                        Console.WriteLine("Cantidad invalida o stock insuficiente.");
+                    }
+                    else
+                    {
+                        double subtotal = precios[pos] * cantidad;
+                        stock[pos] -= cantidad;
+
+
+
+                        ComprobanteCodigos[ncom] = codigoComprobante;
+                        indiceProd[ncom] = pos;
+                        indiceCli[ncom] = -1;
+                        cantidadVendida[ncom] = cantidad;
+                        totalVenta[ncom] = subtotal;
+                        ncom++;
+
+                        totalComprobante += subtotal;
+                        seRegistroProducto = true;
+                        Console.WriteLine("Producto agregado al comprobante.");
+                        Console.WriteLine($"Subtotal: S/{subtotal}");
+                        Console.WriteLine($"Stock restante: {stock[pos]}");
+                        if ((stock[pos]) <= (stock_inicial[pos] / 2))
+                        {
+                            Console.WriteLine($"Alerta!!! El stock restante [{stock[pos]}] es inferior o igual a la mitad del stock inicial " +
+                                $"[{stock_inicial[pos]}]," +
+                                $" se recomienda reabastecer.");
+                        }
                     }
                 }
+                if (ncom >= max)
+                {
+                    break;
+                }
+
+                string respuesta = "";
+                while (true)
+                {
+                    respuesta = Validadores.LeerTexto("¿Desea agregar otro producto al mismo comprobante[S/N]?: ").ToUpper();
+                    if (respuesta == "S" || respuesta == "N")
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Ingrese solo [S/N].");
+                    }
+                }
+                if (respuesta == "N")
+                {
+                    if (seRegistroProducto)
+                    {
+                        nbol++;
+                        Console.WriteLine("\nBOLETA DE VENTA");
+                        Console.WriteLine($"Código de comprobante: {codigoComprobante}");
+                        Console.WriteLine($"Total: S/{totalComprobante}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No se registraron productos (comprobante no emitido).");
+                    }
+                    break;
+                }
+
             }
             Console.ReadKey();
         }
 
+
+
         //Emitir comprobante con DNI de cliente
-        public static void EmitirComprobanteDni() 
+        public static void EmitirComprobanteDni()
         {
             Console.Clear();
             Console.WriteLine("EMITIR COMPROBANTE CON DNI");
@@ -700,100 +757,187 @@ namespace FP_EP
                 Console.ReadKey();
                 return;
             }
-            if (ncli == 0) 
+            if (ncli == 0)
             {
                 Console.WriteLine("No hay clientes registrados.");
                 Console.ReadKey();
                 return;
             }
 
-            Console.Write("Codigo del producto: ");
-            string codigo = Console.ReadLine() ?? "";
-            int pos = BuscarProductoPorCodigo(codigo);
-
             Console.Write("Ingrese DNI del cliente: ");
             string dni = Console.ReadLine() ?? "";
             int posdni = BuscarClientePorDni(dni);
 
-            if (pos == -1 ||posdni==-1)
+            if (posdni == -1)
             {
-                Console.WriteLine("Producto y/o cliente no encontrado.");
+                Console.WriteLine("Cliente no encontrado.");
+                Console.ReadKey();
+                return;
             }
-            else
-            {
-                MostrarProducto(pos);
-                int cantidad = Validadores.LeerEntero("Cantidad a vender: ");
+            string codigoComprobante = CodigoComprobInicio + nbol;
+            double totalComprobante = 0;
+            bool seRegistroProducto = false;
 
-                if (cantidad <= 0 || cantidad > stock[pos])
+            while (true)
+            {
+
+                Console.Write("Codigo del producto: ");
+                string codigo = Console.ReadLine() ?? "";
+                int pos = BuscarProductoPorCodigo(codigo);
+
+                if (pos == -1)
                 {
-                    Console.WriteLine("Cantidad invalida o stock insuficiente.");
+                    Console.WriteLine("Producto no encontrado.");
+                }
+                else if (ncom >= max)
+                {
+                    Console.WriteLine("Se alcanzó el límite permitido de registros.");
+                    break;
                 }
                 else
                 {
-                    double total = precios[pos] * cantidad;
-                    stock[pos] -= cantidad;
+                    MostrarProducto(pos);
+                    int cantidad = Validadores.LeerEntero("Cantidad a vender: ");
 
-                    Console.WriteLine("BOLETA DE VENTA");
-                    Console.WriteLine("DNI: " + dnis[posdni]);
-                    Console.WriteLine("Nombre cliente: " + clientes[posdni]);
-                    Console.WriteLine("Producto: " + nombres[pos]);
-                    Console.WriteLine("Codigo: " + codigos[pos]);
-                    Console.WriteLine("Precio unitario: S/ " + precios[pos]);
-                    Console.WriteLine("Cantidad: " + cantidad);
-                    Console.WriteLine("TOTAL: S/ " + total);
-                    Console.WriteLine("Stock restante: " + stock[pos]);
-
-                    ComprobanteCodigos[ncom] = CodigoComprobInicio + ncom;
-                    indiceProd[ncom] = pos;
-                    indiceCli[ncom] = posdni;
-                    cantidadVendida[ncom] = cantidad;
-                    totalVenta[ncom] = total;
-                    ncom++;
-                    if ((stock[pos]) <= (stock_inicial[pos] / 2)) 
+                    if (cantidad <= 0 || cantidad > stock[pos])
                     {
-                        Console.WriteLine($"Alerta!!! El stock restante [{stock[pos]}] es inferior o igual a la mitad del stock inicial [{stock_inicial[pos]}]," +
-                            $" se recomienda reabastecer.");
+                        Console.WriteLine("Cantidad invalida o stock insuficiente.");
+                    }
+                    else
+                    {
+                        double subtotal = precios[pos] * cantidad;
+                        stock[pos] -= cantidad;
+
+
+
+                        ComprobanteCodigos[ncom] = codigoComprobante;
+                        indiceProd[ncom] = pos;
+                        indiceCli[ncom] = posdni;
+                        cantidadVendida[ncom] = cantidad;
+                        totalVenta[ncom] = subtotal;
+                        ncom++;
+
+                        totalComprobante += subtotal;
+                        seRegistroProducto = true;
+                        Console.WriteLine("Producto agregado al comprobante.");
+                        Console.WriteLine($"Subtotal: S/{subtotal}");
+                        Console.WriteLine($"Stock restante: {stock[pos]}");
+
+                        if ((stock[pos]) <= (stock_inicial[pos] / 2))
+                        {
+                            Console.WriteLine($"Alerta!!! El stock restante [{stock[pos]}] es inferior o igual a la mitad del " +
+                                $"stock inicial [{stock_inicial[pos]}]," +
+                                $" se recomienda reabastecer.");
+                        }
+                    }
+                }
+                if (ncom >= max)
+                {
+                    break;
+                }
+                string respuesta = "";
+                while (true)
+                {
+                    respuesta = Validadores.LeerTexto("¿Desea agregar otro producto al mismo comprobante[S/N]?: ").ToUpper();
+                    if (respuesta == "S" || respuesta == "N")
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Ingrese solo [S/N].");
+                    }
+                }
+                if (respuesta == "N")
+                {
+                    if (seRegistroProducto)
+                    {
+                        nbol++;
+                        Console.WriteLine("\nBOLETA DE VENTA CON DNI");
+                        Console.WriteLine($"Código de comprobante: {codigoComprobante}");
+                        Console.WriteLine($"DNI: {dnis[posdni]}");
+                        Console.WriteLine($"Nombre Cliente: {clientes[posdni]}");
+                        Console.WriteLine($"Total: S/{totalComprobante}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No se registraron productos (comprobante no emitido).");
+                    }
+                    break;
+                }
+
+            }
+
+            Console.ReadKey();
+        }
+
+        //Mostrar info de todos los comprobantes emitidos
+        public static void ListarComprobantes()
+        {
+            Console.Clear();
+            Console.WriteLine("LISTA DE COMPROBANTES");
+
+            if (ncom == 0)
+            {
+                Console.WriteLine("No hay comprobantes registrados.");
+            }
+            else
+            {
+                for (int i = 0; i < ncom; i++)
+                {
+                    bool repetido = false;
+                    for (int j = 0; j < i; j++)
+                    {
+                        if (ComprobanteCodigos[i] == ComprobanteCodigos[j])
+                        {
+                            repetido = true;
+                            break;
+                        }
+                    }
+                    if (!repetido)
+                    {
+                        MostrarComprobante(i);
                     }
                 }
             }
             Console.ReadKey();
         }
 
-        //Mostrar info de todos los comprobantes emitidos
-        public static void ListarComprobantes() 
-        {
-            Console.Clear();
-            Console.WriteLine("LISTA DE COMPROBANTES");
-
-            if (ncom == 0)
-                Console.WriteLine("No hay comprobantes registrados.");
-
-            for (int i = 0; i < ncom; i++)
-                MostrarComprobante(i);
-
-            Console.ReadKey();
-        }
-
         //Mostrar información de comprobante
-        public static void MostrarComprobante(int i) 
+        public static void MostrarComprobante(int i)
         {
-            Console.WriteLine("Codigo comprobante: " + ComprobanteCodigos[i]);
+            string codigo = ComprobanteCodigos[i];
+            double total = 0;
 
-            if (indiceCli[i]!=-1)
+            Console.WriteLine("Codigo de comprobante: " + codigo);
+
+
+            if (indiceCli[i] != -1)
             {
-                Console.WriteLine($"DNI cliente: {dnis[indiceCli[i]]}");
-                Console.WriteLine($"Nombre cliente: {clientes[indiceCli[i]]}");
+                Console.WriteLine($"DNI cliente: {dnisRespaldo[indiceCli[i]]}");
+                Console.WriteLine($"Nombre cliente: {clientesRespaldo[indiceCli[i]]}");
             }
-
-            Console.WriteLine("Codigo producto: " + codigos[indiceProd[i]]);
-            Console.WriteLine("Nombre: " + nombres[indiceProd[i]]);
-            Console.WriteLine("Precio unitario: S/ " + precios[indiceProd[i]]);
-            Console.WriteLine("Cantidad vendida: " + cantidadVendida[i]);
-            Console.WriteLine("----------------------");
+            Console.WriteLine("===================================DETALLES DE LA COMPRA==================================");
+            Console.WriteLine("CODIGO\t| NOMBRE \t\t| PRECIO UNITARIO \t| CANTIDAD VENDIDA \t| SUBTOTAL");
+            Console.WriteLine("------------------------------------------------------------------------------------------");
+            for (int j = 0; j < ncom; j++)
+            {
+                if (ComprobanteCodigos[j] == codigo)
+                {
+                    string nombre = nombres[indiceProd[j]];
+                    string tabulacion = nombre.Length < 8 ? "\t\t" : nombre.Length < 16 ? "\t" : "";
+                    Console.WriteLine($"{codigos[indiceProd[j]]} \t| {nombre}{tabulacion} \t| {precios[indiceProd[j]]} \t\t\t| {cantidadVendida[j]} \t\t\t| {totalVenta[j]}");
+                    total += totalVenta[j];
+                    Console.WriteLine("------------------------------------------------------------------------------------------");
+                }
+            }
+            Console.WriteLine($"TOTAL DE COMPRA: S/{total}");
+            Console.WriteLine("==========================");
+            Console.WriteLine("\n");
         }
 
         //Buscar comprobante por código
-        public static void BuscarComprobante() 
+        public static void BuscarComprobante()
         {
             Console.Clear();
             Console.WriteLine("BUSCAR COMPROBANTE");
@@ -810,7 +954,7 @@ namespace FP_EP
         }
 
         //Obtener índice del código del comprobante
-        static int BuscarComprobantePorCodigo(string codigo) 
+        static int BuscarComprobantePorCodigo(string codigo)
         {
             for (int i = 0; i < ncom; i++)
                 if (ComprobanteCodigos[i] == codigo)
@@ -838,7 +982,7 @@ namespace FP_EP
 
                 for (int i = 0; i < nprod; i++)
                 {
-                    escribir.WriteLine($"{codigos[i]}|{nombres[i]}|" +$"{precios[i].ToString(CultureInfo.InvariantCulture)}|" +
+                    escribir.WriteLine($"{codigos[i]}|{nombres[i]}|" + $"{precios[i].ToString(CultureInfo.InvariantCulture)}|" +
                     $"{stock[i]}|{stock_inicial[i]}");
                 }
 
@@ -848,8 +992,14 @@ namespace FP_EP
                     escribir.WriteLine($"{dnis[i]}|{clientes[i]}|{telefonos[i]}");
                 }
 
+                escribir.WriteLine("CLIENTES RESPALDO");
+                for (int i = 0; i < ncli; i++)
+                {
+                    escribir.WriteLine($"{dnisRespaldo[i]}|{clientesRespaldo[i]}|{telefonosRespaldo[i]}");
+                }
+
                 escribir.WriteLine("COMPROBANTES");
-                for (int i = 0; i < ncom; i++) 
+                for (int i = 0; i < ncom; i++)
                 {
                     escribir.WriteLine($"{ComprobanteCodigos[i]}|" + $"{indiceProd[i]}|" + $"{indiceCli[i]}|" +
                     $"{totalVenta[i].ToString(CultureInfo.InvariantCulture)}|" + $"{cantidadVendida[i]}");
@@ -857,7 +1007,7 @@ namespace FP_EP
             }
             Console.WriteLine($"Datos guardados correctamente.");
         }
-        static public void Cargar_datos() 
+        static public void Cargar_datos()
         {
             Console.WriteLine("*****CARGAR DATOS DE ARCHIVO*****");
             if (!File.Exists(rutaArchivo))
@@ -865,7 +1015,7 @@ namespace FP_EP
                 Console.WriteLine("No existe el archivo.");
                 return;
             }
-            using (StreamReader archivo = new StreamReader(rutaArchivo)) 
+            using (StreamReader archivo = new StreamReader(rutaArchivo))
             {
                 archivo.ReadLine();
 
@@ -897,6 +1047,10 @@ namespace FP_EP
                     dnis[i] = datos[0];
                     clientes[i] = datos[1];
                     telefonos[i] = datos[2];
+
+                    dnisRespaldo[i] = datos[0];
+                    clientesRespaldo[i] = datos[1];
+                    telefonosRespaldo[i] = datos[2];
                 }
                 archivo.ReadLine();
 

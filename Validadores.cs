@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FP_EP
+namespace EFV1_PorCorregir
 {
     internal class Validadores
     {
-
         //Validar que lo ingresado sea entero int
         public static int LeerEntero(string mensaje)
         {
@@ -63,7 +62,7 @@ namespace FP_EP
                 }
                 Console.WriteLine("Error: Ingrese un valor númerico.");
             }
-            
+
         }
 
         //Validar que el texto no esté vacío
@@ -80,6 +79,5 @@ namespace FP_EP
                 Console.WriteLine("Error: Este campo no puede estar vacio.");
             }
         }
-
     }
 }
