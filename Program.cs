@@ -925,7 +925,7 @@ namespace EFV1_PorCorregir
                 if (ComprobanteCodigos[j] == codigo)
                 {
                     string nombre = nombres[indiceProd[j]];
-                    string tabulacion = nombre.Length < 8 ? "\t\t" : nombre.Length < 16 ? "\t" : "";
+                    string tabulacion = nombre.Length < 8 ? "\t" : nombre.Length < 16 ? "\t" : "";
                     Console.WriteLine($"{codigos[indiceProd[j]]} \t| {nombre}{tabulacion} \t| {precios[indiceProd[j]]} \t\t\t| {cantidadVendida[j]} \t\t\t| {totalVenta[j]}");
                     total += totalVenta[j];
                     Console.WriteLine("------------------------------------------------------------------------------------------");
